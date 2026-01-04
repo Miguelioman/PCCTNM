@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TNM Dashboard – Plaveiselcelcarcinoom</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#121a33;
+      --card2:#0f1730;
+      --text:#e9ecff;
+      --muted:#aab2e6;
+      --line:#24315e;
+      --accent:#7aa2ff;
+      --good:#41d18a;
+      --warn:#ffcc66;
+      --bad:#ff6b7a;
+      --chip:#1a2550;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0; padding:24px;
+      font-family: var(--sans);
+      background: radial-gradient(1200px 800px at 15% 10%, rgba(122,162,255,.20), transparent 60%),
+                  radial-gradient(1000px 700px at 85% 25%, rgba(65,209,138,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+
+    header{
+      max-width: 1200px; margin: 0 auto 18px auto;
+      display:flex; gap:14px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
+    }
+    .title{
+      display:flex; flex-direction:column; gap:6px;
+    }
+    h1{ margin:0; font-size: 22px; letter-spacing:.2px;}
+    .subtitle{ color:var(--muted); font-size: 13px; line-height:1.35; max-width: 880px;}
+    .toolbar{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    button{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      color:var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      box-shadow: 0 6px 14px rgba(0,0,0,.25);
+      font-weight:600;
+    }
+    button:hover{ border-color: rgba(122,162,255,.6); }
+    button:active{ transform: translateY(1px); }
+    .ghost{
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .grid{
+      max-width: 1200px; margin: 0 auto;
+      display:grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap:18px;
+    }
+
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      background: rgba(0,0,0,.10);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .card .hd h2{
+      margin:0; font-size: 14px; letter-spacing:.3px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .card .bd{ padding:16px; }
+
+    .section{
+      display:flex; flex-direction:column; gap:12px;
+    }
+    label{
+      display:flex; flex-direction:column; gap:6px;
+      font-size: 13px; color: var(--muted);
+    }
+    select, input[type="number"], input[type="text"]{
+      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      outline:none;
+    }
+    select:focus, input:focus{ border-color: rgba(122,162,255,.7); }
+
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 680px){
+      .row{ grid-template-columns: 1fr; }
+    }
+
+    .pillbar{
+      display:flex; flex-wrap:wrap; gap:8px;
+      margin-top: 8px;
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      font-size: 12px;
+      user-select:none;
+      cursor:pointer;
+    }
+    .pill input{ margin:0; accent-color: var(--accent); }
+    .pill small{ color: var(--muted); }
+
+    .results{
+      display:flex; flex-direction:column; gap:14px;
+    }
+    .big{
+      display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap;
+      gap:10px;
+    }
+    .tnm{
+      font-family: var(--mono);
+      font-size: 22px;
+      letter-spacing: .4px;
+      padding:12px 14px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+    }
+    .chips{
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .chip{
+      padding:8px 10px;
+      border-radius: 999px;
+      background: var(--chip);
+      border:1px solid rgba(255,255,255,.10);
+      font-size: 12px;
+      color: var(--text);
+      display:inline-flex; gap:8px; align-items:center;
+    }
+    .chip b{ font-family: var(--mono); font-weight:700; }
+    .status{
+      font-size:12px; color: var(--muted);
+      line-height:1.35;
+      border-left: 3px solid rgba(122,162,255,.55);
+      padding-left: 10px;
+    }
+    .hint{
+      font-size: 12px; color: var(--muted);
+      margin-top: 10px;
+    }
+
+    details{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.14);
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+    summary{
+      cursor:pointer;
+      color: var(--text);
+      font-weight:700;
+      list-style:none;
+    }
+    summary::-webkit-details-marker{ display:none; }
+    .map{
+      margin-top:10px;
+      display:grid;
+      gap:10px;
+      grid-template-columns: 1fr;
+      color: var(--muted);
+      font-size: 12px;
+      line-height:1.35;
+    }
+    .map code{ font-family: var(--mono); color: var(--text); }
+    .warnbox{
+      border-left: 3px solid rgba(255,204,102,.75);
+      padding-left: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height:1.35;
+    }
+
+    .copyok{
+      color: var(--good);
+      font-weight:700;
+      font-size: 12px;
+      display:none;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="title">
+      <h1>TNM Dashboard – Plaveiselcelcarcinoom (cSCC)</h1>
+      <div class="subtitle">
+        Vul de tumorkenmerken in; het dashboard stelt automatisch <b>T</b>, <b>N</b> (klinisch of pathologisch) en <b>M</b> vast
+        volgens de door jou opgegeven criteria. (Dit is een hulpmiddel, geen vervanging van klinische besluitvorming.)
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button id="btnCopy">Kopieer TNM</button>
+      <span class="copyok" id="copyOk">Gekopieerd ✓</span>
+      <button class="ghost" id="btnReset">Reset</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <!-- INPUTS -->
+    <section class="card">
+      <div class="hd">
+        <h2>Invoer</h2>
+      </div>
+      <div class="bd section">
+        <!-- Mode -->
+        <div class="row">
+          <label>
+            N-type
+            <select id="nMode">
+              <option value="clinical" selected>Klinische N</option>
+              <option value="pathological">Pathologische N</option>
+            </select>
+          </label>
+
+          <label>
+            Tumorgrootte (cm)
+            <input id="tumorSize" type="number" min="0" step="0.1" placeholder="bijv. 2.5" />
+          </label>
+
+          <label>
+            Metastasen op afstand (M)
+            <select id="mSelect">
+              <option value="M0" selected>M0 – geen metastasen op afstand</option>
+              <option value="M1">M1 – metastasen op afstand</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- T flags -->
+        <div>
+          <div class="warnbox">
+            <b>Let op:</b> Als je <code>TX</code> of <code>Tis</code> aanvinkt, krijgt dat voorrang op grootte/andere T-kenmerken.
+            Als je T4a of T4b aanvinkt, gaat dat boven T3 en grootte.
+          </div>
+
+          <div class="pillbar" style="margin-top:10px;">
+            <label class="pill" title="Primaire tumor kan niet worden bepaald">
+              <input type="checkbox" id="tTX" />
+              <span><b>TX</b> <small>(niet te bepalen)</small></span>
+            </label>
+
+            <label class="pill" title="Carcinoma in situ">
+              <input type="checkbox" id="tTis" />
+              <span><b>Tis</b> <small>(in situ)</small></span>
+            </label>
+
+            <label class="pill" title="Tumor met bot/beenmerginvasie">
+              <input type="checkbox" id="tT4a" />
+              <span><b>T4a</b> <small>(bot/beenmerg)</small></span>
+            </label>
+
+            <label class="pill" title="Tumor met schedelbasisinvasie en/of schedelbasisforamen betrokkenheid">
+              <input type="checkbox" id="tT4b" />
+              <span><b>T4b</b> <small>(schedelbasis/foramen)</small></span>
+            </label>
+
+            <label class="pill" title="Minimale boterosie (voor T3-criterium)">
+              <input type="checkbox" id="tBoneErosion" />
+              <span>Minimale <b>boterosie</b> <small>(T3)</small></span>
+            </label>
+
+            <label class="pill" title="Perineurale invasie in zenuwen dikker dan 0,1 mm of diepe zenuwen (> dermis) of diepe invasie">
+              <input type="checkbox" id="tPNI" />
+              <span><b>Perineurale invasie</b> <small>(T3)</small></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- N inputs -->
+        <div class="row" style="margin-top:6px;">
+          <label>
+            N – status (handmatig kiezen)
+            <select id="nSelect">
+              <option value="NX">NX</option>
+              <option value="N0" selected>N0</option>
+
+              <!-- Klinisch -->
+              <optgroup label="Klinische N (cN)" id="groupClinical">
+                <option value="cN1">N1 – 1 ipsi ≤3 cm, geen ENE</option>
+                <option value="cN2a">N2a – 1 ipsi 3–6 cm, geen ENE</option>
+                <option value="cN2b">N2b – mult ipsi &lt;6 cm, geen ENE</option>
+                <option value="cN2c">N2c – bi/contra &lt;6 cm, geen ENE</option>
+                <option value="cN3a">N3a – &gt;6 cm, geen ENE</option>
+                <option value="cN3b">N3b – (enige) met klinische ENE</option>
+              </optgroup>
+
+              <!-- Pathologisch -->
+              <optgroup label="Pathologische N (pN)" id="groupPath" style="display:none;">
+                <option value="pN1">N1 – 1 ipsi ≤3 cm, geen ENE</option>
+                <option value="pN2a">N2a – ipsi/contra ≤3 cm mét ENE óf 1 ipsi 3–6 cm, geen ENE</option>
+                <option value="pN2b">N2b – mult ipsi &lt;6 cm, geen ENE</option>
+                <option value="pN2c">N2c – bi/contra &lt;6 cm, geen ENE</option>
+                <option value="pN3a">N3a – &gt;6 cm, geen ENE</option>
+                <option value="pN3b">N3b – 1 ipsi &gt;3 cm mét ENE óf mult (ipsi/contra/bi) mét ENE</option>
+              </optgroup>
+            </select>
+          </label>
+
+          <label>
+            Extranodale extensie (ENE)
+            <select id="eneSelect">
+              <option value="unknown" selected>Onbekend / n.v.t.</option>
+              <option value="no">Nee</option>
+              <option value="yes">Ja</option>
+            </select>
+          </label>
+
+          <label>
+            Grootste lymfeklier (cm)
+            <input id="nodeSize" type="number" min="0" step="0.1" placeholder="optioneel" />
+          </label>
+        </div>
+
+        <div class="hint">
+          Tip: Je kunt óf <b>N handmatig</b> kiezen, óf de ENE + knoopgrootte invullen om te controleren of je keuze logisch is.
+          Het dashboard blijft bij jouw geselecteerde N-categorie als “officiële” uitvoer.
+        </div>
+      </div>
+    </section>
+
+    <!-- OUTPUTS -->
+    <section class="card">
+      <div class="hd">
+        <h2>Resultaat</h2>
+      </div>
+      <div class="bd results">
+        <div class="big">
+          <div class="tnm" id="tnmLine">T?  N?  M0</div>
+          <div class="chips">
+            <span class="chip">T: <b id="tOut">?</b></span>
+            <span class="chip">N: <b id="nOut">?</b></span>
+            <span class="chip">M: <b id="mOut">M0</b></span>
+          </div>
+        </div>
+
+        <div class="status" id="statusText">
+          Vul de velden in om de TNM te bepalen.
+        </div>
+
+        <details>
+          <summary>Toegepaste regels (samenvatting)</summary>
+          <div class="map">
+            <div>
+              <b>T-regels:</b>
+              <ul>
+                <li><code>TX</code> als primaire tumor niet te bepalen.</li>
+                <li><code>Tis</code> bij carcinoma in situ.</li>
+                <li><code>T4b</code> bij schedelbasisinvasie en/of foramen-betrokkenheid.</li>
+                <li><code>T4a</code> bij bot/beenmerginvasie.</li>
+                <li><code>T3</code> bij &gt;4 cm <i>of</i> minimale boterosie <i>of</i> perineurale invasie (zoals opgegeven).</li>
+                <li><code>T2</code> bij &gt;2 cm en ≤4 cm.</li>
+                <li><code>T1</code> bij ≤2 cm.</li>
+              </ul>
+            </div>
+            <div>
+              <b>N-regels:</b> worden getoond als <code>cN…</code> (klinisch) of <code>pN…</code> (pathologisch) op basis van modus, met jouw selectie als output.
+            </div>
+            <div>
+              <b>M-regels:</b> <code>M0</code> geen afstandsmetastasen; <code>M1</code> wel.
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>Controle (optioneel): past ENE + grootte bij gekozen N?</summary>
+          <div class="map" id="nCheck">
+            Vul ENE en (optioneel) knoopgrootte in.
+          </div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Elements
+    const el = (id) => document.getElementById(id);
+
+    const nMode = el("nMode");
+    const tumorSize = el("tumorSize");
+    const mSelect = el("mSelect");
+
+    const tTX = el("tTX");
+    const tTis = el("tTis");
+    const tT4a = el("tT4a");
+    const tT4b = el("tT4b");
+    const tBoneErosion = el("tBoneErosion");
+    const tPNI = el("tPNI");
+
+    const nSelect = el("nSelect");
+    const eneSelect = el("eneSelect");
+    const nodeSize = el("nodeSize");
+
+    const groupClinical = el("groupClinical");
+    const groupPath = el("groupPath");
+
+    const tOut = el("tOut");
+    const nOut = el("nOut");
+    const mOut = el("mOut");
+    const tnmLine = el("tnmLine");
+    const statusText = el("statusText");
+    const nCheck = el("nCheck");
+
+    const btnCopy = el("btnCopy");
+    const btnReset = el("btnReset");
+    const copyOk = el("copyOk");
+
+    // --- Logic: T ---
+    function computeT(){
+      const size = parseFloat(tumorSize.value);
+
+      // Priority overrides
+      if (tTX.checked) return { code: "TX", why: "TX aangevinkt: primaire tumor kan niet worden bepaald." };
+      if (tTis.checked) return { code: "Tis", why: "Tis aangevinkt: carcinoma in situ." };
+
+      // Highest stage first
+      if (tT4b.checked) return { code: "T4b", why: "T4b aangevinkt: schedelbasisinvasie en/of foramen betrokkenheid." };
+      if (tT4a.checked) return { code: "T4a", why: "T4a aangevinkt: bot/beenmerginvasie." };
+
+      const hasT3Feature = tBoneErosion.checked || tPNI.checked;
+      if ((Number.isFinite(size) && size > 4) || hasT3Feature){
+        const reasons = [];
+        if (Number.isFinite(size) && size > 4) reasons.push("tumor > 4 cm");
+        if (tBoneErosion.checked) reasons.push("minimale boterosie");
+        if (tPNI.checked) reasons.push("perineurale invasie");
+        return { code: "T3", why: "T3: " + reasons.join(" of ") + "." };
+      }
+
+      if (Number.isFinite(size)){
+        if (size <= 2) return { code: "T1", why: "T1: tumor ≤ 2 cm." };
+        if (size > 2 && size <= 4) return { code: "T2", why: "T2: tumor > 2 cm en ≤ 4 cm." };
+      }
+
+      return { code: "T?", why: "Geen (geldige) tumorgrootte of T-kenmerk ingevuld; T niet te bepalen." };
+    }
+
+    // --- Logic: N (output = selected option, with mode) ---
+    function normalizeNSelected(){
+      const val = nSelect.value;
+
+      if (val === "NX" || val === "N0") return val;
+
+      // cN / pN values stored as e.g. cN2a, pN3b, but shown to user as N2a etc.
+      // Output we show: cN2a or pN2a to keep clinical/pathological explicit.
+      return val;
+    }
+
+    function modePrefix(){
+      return (nMode.value === "clinical") ? "c" : "p";
+    }
+
+    function updateNOptionsVisibility(){
+      const clinical = nMode.value === "clinical";
+      groupClinical.style.display = clinical ? "" : "none";
+      groupPath.style.display = clinical ? "none" : "";
+
+      // If currently selected group doesn't match mode, switch to N0 as a safe default.
+      const val = nSelect.value;
+      if (clinical && val.startsWith("pN")) nSelect.value = "N0";
+      if (!clinical && val.startsWith("cN")) nSelect.value = "N0";
+    }
+
+    // --- Optional: N "check" helper based on ENE + size (rough consistency check) ---
+    function computeNCheckSuggestion(){
+      const ene = eneSelect.value; // unknown/no/yes
+      const s = parseFloat(nodeSize.value);
+      const clinical = nMode.value === "clinical";
+
+      if (ene === "unknown" && !Number.isFinite(s)){
+        return "Vul ENE (ja/nee) en/of grootste lymfeklier (cm) in voor een grove plausibiliteitscheck.";
+      }
+
+      // If NX or N0 selected, don't force anything; just give a hint.
+      const selected = nSelect.value;
+
+      // We only do rule-based hints for the cases explicitly defined.
+      // NOTE: Your text defines categories by laterality/number too; we don't infer those here.
+      const parts = [];
+
+      if (ene !== "unknown") parts.push(`ENE: <code>${ene}</code>`);
+      if (Number.isFinite(s)) parts.push(`grootste klier: <code>${s.toFixed(1)} cm</code>`);
+
+      let hint = `Invoer: ${parts.join(", ")}.<br/>`;
+
+      if (Number.isFinite(s) && s > 6 && ene !== "yes"){
+        hint += `→ Past bij <code>${modePrefix()}N3a</code> (>${6} cm zonder ENE) als lateralisatie/aantal dit ondersteunen.`;
+        return hint;
+      }
+
+      if (ene === "yes"){
+        hint += clinical
+          ? `→ Klinisch: ENE aanwezig wijst richting <code>cN3b</code> (met klinische ENE), afhankelijk van aantal/lateralisatie.`
+          : `→ Pathologisch: ENE aanwezig kan passen bij <code>pN2a</code> (≤3 cm met ENE) of <code>pN3b</code> (groter/multipel met ENE), afhankelijk van grootte/aantal/lateralisatie.`;
+        return hint;
+      }
+
+      if (ene === "no" && Number.isFinite(s)){
+        if (s <= 3){
+          hint += `→ Zonder ENE en ≤3 cm: vaak <code>${modePrefix()}N1</code> (bij 1 ipsilaterale klier).`;
+          return hint;
+        }
+        if (s > 3 && s <= 6){
+          hint += clinical
+            ? `→ Klinisch: 3–6 cm zonder ENE: <code>cN2a</code> (bij 1 ipsilaterale klier).`
+            : `→ Pathologisch: 3–6 cm zonder ENE: <code>pN2a</code> (bij 1 ipsilaterale klier).`;
+          return hint;
+        }
+        if (s > 6){
+          hint += `→ >6 cm zonder ENE: <code>${modePrefix()}N3a</code>.`;
+          return hint;
+        }
+      }
+
+      hint += "Niet genoeg informatie om een categorie te suggereren (aantal en lateralisatie ontbreken).";
+      if (selected !== "NX" && selected !== "N0"){
+        hint += `<br/>Gekozen output blijft: <code>${normalizeNSelected()}</code>.`;
+      }
+      return hint;
+    }
+
+    // --- Compose TNM ---
+    function update(){
+      updateNOptionsVisibility();
+
+      // T
+      const t = computeT();
+
+      // N
+      const n = normalizeNSelected();
+
+      // M
+      const m = mSelect.value;
+
+      // Output chips
+      tOut.textContent = t.code;
+      nOut.textContent = n;
+      mOut.textContent = m;
+
+      // Main line
+      tnmLine.textContent = `${t.code}  ${n}  ${m}`;
+
+      // Status text
+      const modeLabel = (nMode.value === "clinical") ? "Klinische N" : "Pathologische N";
+      let status = `T bepaald als <b>${t.code}</b> (${t.why})<br/>`;
+      status += `${modeLabel}: output <b>${n}</b> (op basis van jouw selectie).<br/>`;
+      status += `M: <b>${m}</b>.`;
+      statusText.innerHTML = status;
+
+      // Optional check
+      nCheck.innerHTML = computeNCheckSuggestion();
+
+      // Small UX: mutually exclusive-ish for TX/Tis vs others
+      // (We won't auto-uncheck; we just visually guide by priority in computeT)
+    }
+
+    // Copy
+    btnCopy.addEventListener("click", async () => {
+      const text = tnmLine.textContent.trim();
+      try{
+        await navigator.clipboard.writeText(text);
+        copyOk.style.display = "inline";
+        setTimeout(()=> copyOk.style.display = "none", 1200);
+      }catch(e){
+        alert("Kopiëren lukt niet in deze browsercontext. Selecteer en kopieer handmatig:\n\n" + text);
+      }
+    });
+
+    // Reset
+    btnReset.addEventListener("click", () => {
+      nMode.value = "clinical";
+      tumorSize.value = "";
+      mSelect.value = "M0";
+
+      tTX.checked = false;
+      tTis.checked = false;
+      tT4a.checked = false;
+      tT4b.checked = false;
+      tBoneErosion.checked = false;
+      tPNI.checked = false;
+
+      nSelect.value = "N0";
+      eneSelect.value = "unknown";
+      nodeSize.value = "";
+
+      update();
+    });
+
+    // Listeners
+    [
+      nMode, tumorSize, mSelect,
+      tTX, tTis, tT4a, tT4b, tBoneErosion, tPNI,
+      nSelect, eneSelect, nodeSize
+    ].forEach(x => x.addEventListener("input", update));
+
+    // Init
+    update();
+  </script>
+</body>
+</html>
