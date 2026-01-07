@@ -332,16 +332,21 @@
     const heeftRegionaleLymfadenopathie = !!(Nbase && Nbase !== "N0");
 
     const beeldvorming = (()=>{
+      let advies = "";
       if(r === "Hoog-risico"){
-        return "Verricht in de diagnostische fase bij hoog-risico cPCC een echografie die gecombineerd kan worden met een cytologische punctie van radiologisch suspecte lymfklieren, bij voorkeur in één sessie.";
+        advies = "Verricht in de diagnostische fase bij hoog-risico cPCC een echografie die gecombineerd kan worden met een cytologische punctie van radiologisch suspecte lymfklieren, bij voorkeur in één sessie.";
       }
       if(r === "Laag-risico"){
-        return "Verricht in de diagnostische fase bij laag-risico cPCC met regionale lymfadenopathie en/of klinisch palpabele lymfeklieren een echografie die gecombineerd kan worden met een cytologische punctie van radiologisch suspecte lymfklieren, bij voorkeur in één sessie.";
+        advies = "Verricht in de diagnostische fase bij laag-risico cPCC met regionale lymfadenopathie en/of klinisch palpabele lymfeklieren een echografie die gecombineerd kan worden met een cytologische punctie van radiologisch suspecte lymfklieren, bij voorkeur in één sessie.";
       }
       if(r === "Intermediair-risico"){
-        return "Verricht in de diagnostische fase bij intermediair-risico cPCC met regionale lymfadenopathie en/of klinisch palpabele lymfeklieren een echografie die gecombineerd kan worden met een cytologische punctie van radiologisch suspecte lymfklieren, bij voorkeur in één sessie.";
+        advies = "Verricht in de diagnostische fase bij intermediair-risico cPCC met regionale lymfadenopathie en/of klinisch palpabele lymfklieren een echografie die gecombineerd kan worden met een cytologische punctie van radiologisch suspecte lymfklieren, bij voorkeur in één sessie.";
       }
-      return "";
+      // If N is not N0 (lymfogene metastasis), add PET-CT advice
+      if(Nbase !== "N0"){
+        advies += "<br>Verricht een FDG PET-CT bij patiënten met lymfogeen gemetastaseerd cPCC als screeningsonderzoek naar afstandsmetastasen.";
+      }
+      return advies;
     })();
 
     if(r==="Laag-risico") return `
